@@ -1,32 +1,27 @@
-## Process this file with automake to produce Makefile.in.
+## Automake.am for OSPF API client
 
 AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
-DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
-INSTALL_SDATA=@INSTALL@ -m 600
-
 AM_CFLAGS = $(WERROR)
 
-noinst_LIBRARIES = libospf6.a
-sbin_PROGRAMS = ospf6d
+lib_LTLIBRARIES = libospfapiclient.la
+libospfapiclient_la_LDFLAGS = -version-info 0:0:0
+libospfapiclient_la_LIBADD = ../ospfd/libospf.la ../lib/libzebra.la
 
-libospf6_a_SOURCES = \
-	ospf6_network.c ospf6_message.c ospf6_lsa.c ospf6_lsdb.c \
-	ospf6_top.c ospf6_area.c ospf6_interface.c ospf6_neighbor.c \
-	ospf6_flood.c ospf6_route.c ospf6_intra.c ospf6_zebra.c \
-	ospf6_spf.c ospf6_proto.c ospf6_asbr.c ospf6_abr.c ospf6_snmp.c \
-	ospf6d.c
+sbin_PROGRAMS = ospfclient
 
-noinst_HEADERS = \
-	ospf6_network.h ospf6_message.h ospf6_lsa.h ospf6_lsdb.h \
-	ospf6_top.h ospf6_area.h ospf6_interface.h ospf6_neighbor.h \
-	ospf6_flood.h ospf6_route.h ospf6_intra.h ospf6_zebra.h \
-	ospf6_spf.h ospf6_proto.h ospf6_asbr.h ospf6_abr.h ospf6_snmp.h \
-	ospf6d.h
+libospfapiclient_la_SOURCES = \
+	ospf_apiclient.c
 
-ospf6d_SOURCES = \
-	ospf6_main.c $(libospf6_a_SOURCES)
+ospfapiheaderdir = $(pkgincludedir)/ospfapi
 
-ospf6d_LDADD = ../lib/libzebra.la @LIBCAP@
+ospfapiheader_HEADERS = \
+	ospf_apiclient.h
 
-examplesdir = $(exampledir)
-dist_examples_DATA = ospf6d.conf.sample
+ospfclient_SOURCES = \
+	ospfclient.c
+
+ospfclient_LDADD = libospfapiclient.la \
+	../ospfd/libospf.la ../lib/libzebra.la @LIBCAP@
+
+ospfclient_CFLAGS = $(AM_CFLAGS)
+ospfclient_LDFLAGS = $(AM_LDFLAGS)
