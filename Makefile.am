@@ -1,39 +1,119 @@
 ## Process this file with automake to produce Makefile.in.
 
-AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
-DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
-INSTALL_SDATA=@INSTALL@ -m 600
+# Dia, the version i have at least, doesn't do very good EPS output
+# (some of the text is scaled strangely). So this will work, but 
+# it is probably better to use something like gimp to convert the 
+# dia exported PNG files to EPS manually.
+#
+# Here we use 'convert' from the well known 'ImageMagick' package
+# to do conversion from png to eps/pdf for figures. 
+# PDF form is required for quagga.pdf, using PDFTex at least.
+#
+# TeX implementation, which we depend on already anyway.
+#
+# dia -> (dia) -> png -> (convert) -> eps -> (epstopdf) -> pdf
+SUFFIXES = .png .eps .dia .pdf
+DIATOPNG = dia -t png -e
+DIATOEPS = dia -t eps -e
+PNGTOEPS = convert -antialias -contrast -despeckle
+PNGTOPDF = $(PNGTOEPS)
+EPSTOPDF = epstopdf
 
-AM_CFLAGS = $(WERROR)
+# The figure sources
+figures_names_parts = -normal-processing -rs-processing \
+	_topologies_full _topologies_rs
+figures_sources = $(figures_names_parts:%=fig%.dia)
+figures_png = $(figures_names_parts:%=fig%.png)
+figures_pdf = $(figures_names_parts:%=fig%.pdf)
+figures_eps = $(figures_names_parts:%=fig%.eps)
+figures_txt = $(figures_names_parts:%=fig%.txt)
 
-noinst_LIBRARIES = libbgp.a
-sbin_PROGRAMS = bgpd
-bin_PROGRAMS = bgp_btoa
+# rather twisted logic because we have to build PDFs of the EPS figures for
+# PDFTex and yet build one PDF, quagga.pdf, from texi source. Which means we
+# cant rely on a single automatic rule for *.pdf, eg the one automatically
+# provided by automake. If you are an automake wizard, please feel free to
+# compact it somehow.
 
-libbgp_a_SOURCES = \
-	bgpd.c bgp_fsm.c bgp_aspath.c bgp_community.c bgp_attr.c \
-	bgp_debug.c bgp_route.c bgp_zebra.c bgp_open.c bgp_routemap.c \
-	bgp_packet.c bgp_network.c bgp_filter.c bgp_regex.c bgp_clist.c \
-	bgp_dump.c bgp_snmp.c bgp_ecommunity.c bgp_mplsvpn.c bgp_nexthop.c \
-	bgp_damp.c bgp_table.c bgp_advertise.c bgp_vty.c bgp_mpath.c \
-	bgp_encap.c bgp_encap_tlv.c bgp_nht.c
+# Built from defines.texi.in
+BUILT_SOURCES = defines.texi
 
-noinst_HEADERS = \
-	bgp_aspath.h bgp_attr.h bgp_community.h bgp_debug.h bgp_fsm.h \
-	bgp_network.h bgp_open.h bgp_packet.h bgp_regex.h bgp_route.h \
-	bgpd.h bgp_filter.h bgp_clist.h bgp_dump.h bgp_zebra.h \
-	bgp_ecommunity.h bgp_mplsvpn.h bgp_nexthop.h bgp_damp.h bgp_table.h \
-	bgp_advertise.h bgp_snmp.h bgp_vty.h bgp_mpath.h \
-	bgp_encap.h bgp_encap_tlv.h bgp_encap_types.h bgp_nht.h
+info_TEXINFOS = quagga.texi
 
-bgpd_SOURCES = bgp_main.c
-bgpd_LDADD = libbgp.a ../lib/libzebra.la @LIBCAP@ @LIBM@
+# Have to manually specify the quagga.pdf rule in order to allow
+# us to have a generic automatic .pdf rule to build the figure sources
+# because it cant just work from the png's directly it seems - contrary
+# to the documentation...
+quagga.pdf: $(info_TEXINFOS) $(figures_pdf) $(quagga_TEXINFOS)
+	$(TEXI2PDF) -o "$@" $< || true
 
-bgp_btoa_SOURCES = bgp_btoa.c
-bgp_btoa_LDADD = libbgp.a ../lib/libzebra.la @LIBCAP@ @LIBM@
+quagga_TEXINFOS = appendix.texi basic.texi bgpd.texi filter.texi \
+	install.texi ipv6.texi kernel.texi main.texi ospf6d.texi ospfd.texi \
+	overview.texi protocol.texi ripd.texi ripngd.texi routemap.texi \
+	snmp.texi vtysh.texi routeserver.texi defines.texi $(figures_png) \
+	snmptrap.texi ospf_fundamentals.texi isisd.texi $(figures_txt)
 
-examplesdir = $(exampledir)
-dist_examples_DATA = bgpd.conf.sample bgpd.conf.sample2
+.png.eps:
+	$(PNGTOEPS) $< "$@"
 
-EXTRA_DIST = BGP4-MIB.txt
+.png.pdf:
+	$(PNGTOPDF) $< "$@"
 
+.dia.png:
+	$(DIATOPNG) "$@" $<
+
+man_MANS =
+
+if PIMD
+man_MANS += pimd.8
+endif
+
+if BGPD
+man_MANS += bgpd.8
+endif
+
+if ISISD
+man_MANS += isisd.8
+endif
+
+if OSPF6D
+man_MANS += ospf6d.8
+endif
+
+if OSPFCLIENT
+man_MANS += ospfclient.8
+endif
+
+if OSPFD
+man_MANS += ospfd.8
+endif
+
+if RIPD
+man_MANS += ripd.8
+endif
+
+if RIPNGD
+man_MANS += ripngd.8
+endif
+
+if VTYSH
+man_MANS += vtysh.1
+endif
+
+if WATCHQUAGGA
+man_MANS += watchquagga.8
+endif
+
+if ZEBRA
+man_MANS += zebra.8
+endif
+
+EXTRA_DIST = BGP-TypeCode draft-zebra-00.ms draft-zebra-00.txt \
+	bgpd.8 isisd.8 ospf6d.8 ospfclient.8 ospfd.8 ripd.8 \
+	ripngd.8 pimd.8 vtysh.1 watchquagga.8 zebra.8 \
+	mpls/ChangeLog.opaque.txt mpls/cli_summary.txt \
+	mpls/opaque_lsa.txt mpls/ospfd.conf \
+	$(figures_sources) $(figures_png) $(figures_txt) \
+	texinfo.tex
+
+draft-zebra-00.txt: draft-zebra-00.ms
+	groff -T ascii -ms $< > $@
