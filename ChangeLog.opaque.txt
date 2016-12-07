@@ -1,15 +1,44 @@
 ----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * -----
-Changes 2013.07.01
+Changes 2002.12.20
 
-1. Feature enhancements
+1. Bug fixes
 
-  1.1 Update ospf_te.[c,h] in conformance to RFC3630 and clean the code.
-      Add new directive to enable MPLS-TE per interface instead of globally
+  1.1 When an opaque LSA is being removed from (or added to) the LSDB,
+      it does not mean a change in network topology. Therefore, SPF
+      recalculation should not be triggered in that case.
+      There was an assertion failure problem "assert (rn && rn->info)"
+      inside the function "ospf_ase_incremental_update()", because
+      the upper function "ospf_lsa_maxage_walker_remover()" called it
+      when a type-11 opaque LSA is removed due to MaxAge.
 
-  1.2 Add support for RFC4970 "Router Information" and RFC5088 "PCE
-      Capabilities announcement".
+  1.2 Type-9 LSA is defined to have "link-local" flooding scope.
+      In the Database exchange procedure with a new neighbor, a type-9
+      LSA was added in the database summary of a DD message, even if
+      the link is different from the one that have bound to.
 
-  1.3 Incorporate the mpls documentation into the main stream doc.
+2. Feature enhancements
+
+  2.1 Though a "wildcard" concept to handle type-9/10/11 LSAs altogether
+      has introduced about a year ago, it was only a symbol definition
+      and actual handling mechanism was not implemented. Now it works.
+
+----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * -----
+Changes 2002.7.8
+
+1. Bug fixes
+
+  1.1 When "ospf_delete_opaque_functab()" is called, internal structure
+      "oipt" remain unfreed. If register/delete functab is repeated,
+      illegal memory access happens due to this "oipt".
+
+  1.2 In "free_opaque_info_per_id()", there was a crucial typo which
+      ignores a condition test.
+
+      "if (oipi->lsa != NULL);" <-- semicolon!
+
+2. Feature enhancements
+
+  None.
 
 ----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * ----- * -----
 Changes 2001.12.03
