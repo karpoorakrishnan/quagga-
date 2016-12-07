@@ -14,6 +14,13 @@
 
 @SET_MAKE@
 
+#
+# Automake fragment intended to be shared by Makefile.am files in the
+# tree.
+#
+
+
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -89,27 +96,60 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-sbin_PROGRAMS = watchquagga$(EXEEXT)
-subdir = watchquagga
+sbin_PROGRAMS = zebra$(EXEEXT)
+noinst_PROGRAMS = testzebra$(EXEEXT)
+subdir = zebra
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_sys_weak_alias.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(dist_examples_DATA) \
+	$(noinst_HEADERS) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(sbindir)"
-PROGRAMS = $(sbin_PROGRAMS)
-am_watchquagga_OBJECTS = watchquagga.$(OBJEXT)
-watchquagga_OBJECTS = $(am_watchquagga_OBJECTS)
-watchquagga_DEPENDENCIES = ../lib/libzebra.la
+am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"
+PROGRAMS = $(noinst_PROGRAMS) $(sbin_PROGRAMS)
+am_testzebra_OBJECTS = test_main.$(OBJEXT) zebra_rib.$(OBJEXT) \
+	interface.$(OBJEXT) connected.$(OBJEXT) debug.$(OBJEXT) \
+	zebra_vty.$(OBJEXT) kernel_null.$(OBJEXT) \
+	redistribute_null.$(OBJEXT) ioctl_null.$(OBJEXT) \
+	misc_null.$(OBJEXT) zebra_rnh_null.$(OBJEXT)
+testzebra_OBJECTS = $(am_testzebra_OBJECTS)
+am__DEPENDENCIES_1 =
+testzebra_DEPENDENCIES = ../lib/libzebra.la $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am__zebra_SOURCES_DIST = zserv.c main.c interface.c connected.c \
+	zebra_rib.c zebra_routemap.c redistribute.c debug.c rtadv.c \
+	zebra_snmp.c zebra_vty.c irdp_main.c irdp_interface.c \
+	irdp_packet.c router-id.c zebra_fpm.c zebra_rnh.c \
+	zebra_fpm_netlink.c zebra_fpm_protobuf.c zebra_fpm_dt.c
+@HAVE_NETLINK_TRUE@am__objects_1 = zebra_fpm_netlink.$(OBJEXT)
+@HAVE_PROTOBUF_TRUE@am__objects_2 = zebra_fpm_protobuf.$(OBJEXT)
+@DEV_BUILD_TRUE@am__objects_3 = zebra_fpm_dt.$(OBJEXT)
+am_zebra_OBJECTS = zserv.$(OBJEXT) main.$(OBJEXT) interface.$(OBJEXT) \
+	connected.$(OBJEXT) zebra_rib.$(OBJEXT) \
+	zebra_routemap.$(OBJEXT) redistribute.$(OBJEXT) \
+	debug.$(OBJEXT) rtadv.$(OBJEXT) zebra_snmp.$(OBJEXT) \
+	zebra_vty.$(OBJEXT) irdp_main.$(OBJEXT) \
+	irdp_interface.$(OBJEXT) irdp_packet.$(OBJEXT) \
+	router-id.$(OBJEXT) zebra_fpm.$(OBJEXT) zebra_rnh.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3)
+zebra_OBJECTS = $(am_zebra_OBJECTS)
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@HAVE_PROTOBUF_TRUE@am__DEPENDENCIES_3 =  \
+@HAVE_PROTOBUF_TRUE@	$(top_srcdir)/qpb/libquagga_pb.la \
+@HAVE_PROTOBUF_TRUE@	$(am__DEPENDENCIES_1)
+@HAVE_PROTOBUF_TRUE@am__DEPENDENCIES_4 =  \
+@HAVE_PROTOBUF_TRUE@	$(top_srcdir)/fpm/libfpm_pb.la \
+@HAVE_PROTOBUF_TRUE@	$(am__DEPENDENCIES_3)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -144,13 +184,42 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(watchquagga_SOURCES)
-DIST_SOURCES = $(watchquagga_SOURCES)
+SOURCES = $(testzebra_SOURCES) $(zebra_SOURCES)
+DIST_SOURCES = $(testzebra_SOURCES) $(am__zebra_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+DATA = $(dist_examples_DATA)
+HEADERS = $(noinst_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -170,7 +239,8 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp
+am__DIST_COMMON = $(srcdir)/../common.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -190,7 +260,7 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CURSES = @CURSES@
 CYGPATH_W = @CYGPATH_W@
-DEFS = @DEFS@ -DSTATEDIR=\"$(localstatedir)/\"
+DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
 DEJAGNU = @DEJAGNU@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
@@ -346,15 +416,76 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
+
+# Uncomment to use an non-system version of libprotobuf-c.
+#
+# Q_PROTOBUF_C_CLIENT_INCLUDES = -I$(top_srcdir)/third-party/protobuf-c/src
+# Q_PROTOBUF_C_CLIENT_LDOPTS = $(top_builddir)/third-party/protobuf-c/src/libprotobuf-c.la
+@HAVE_PROTOBUF_TRUE@Q_PROTOBUF_C_CLIENT_INCLUDES = 
+@HAVE_PROTOBUF_TRUE@Q_PROTOBUF_C_CLIENT_LDOPTS = -lprotobuf-c
+@HAVE_PROTOBUF_TRUE@Q_PROTOC = protoc
+@HAVE_PROTOBUF_TRUE@Q_PROTOC_C = protoc-c
+@HAVE_PROTOBUF_TRUE@Q_PROTOBUF_CFILES = $(filter %.pb-c.c,$(SOURCES))
+@HAVE_PROTOBUF_TRUE@Q_PROTOBUF_SRCS = $(Q_PROTOBUF_CFILES) $(Q_PROTOBUF_HFILES)
+
+#
+# Information about how to link to various libraries.
+#
+@HAVE_PROTOBUF_TRUE@Q_QUAGGA_PB_CLIENT_LDOPTS = $(top_srcdir)/qpb/libquagga_pb.la $(Q_PROTOBUF_C_CLIENT_LDOPTS)
+@HAVE_PROTOBUF_TRUE@Q_FPM_PB_CLIENT_LDOPTS = $(top_srcdir)/fpm/libfpm_pb.la $(Q_QUAGGA_PB_CLIENT_LDOPTS)
+Q_CLEANFILES = $(Q_PROTOBUF_SRCS)
+Q_BUILT_SRCS = $(Q_PROTOBUF_SRCS)
+AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
+INSTALL_SDATA = @INSTALL@ -m 600
+ipforward = @IPFORWARD@
+if_method = @IF_METHOD@
+rt_method = @RT_METHOD@
+rtread_method = @RTREAD_METHOD@
+kernel_method = @KERNEL_METHOD@
+ioctl_method = @IOCTL_METHOD@
+otherobj = $(ioctl_method) $(ipforward) $(if_method) \
+	$(rt_method) $(rtread_method) $(kernel_method)
+
+@HAVE_NETLINK_TRUE@othersrc = zebra_fpm_netlink.c
+@HAVE_PROTOBUF_TRUE@protobuf_srcs = zebra_fpm_protobuf.c
+@DEV_BUILD_TRUE@dev_srcs = zebra_fpm_dt.c
 AM_CFLAGS = $(WERROR)
-watchquagga_SOURCES = watchquagga.c
-watchquagga_LDADD = ../lib/libzebra.la @LIBCAP@
+zebra_SOURCES = \
+	zserv.c main.c interface.c connected.c zebra_rib.c zebra_routemap.c \
+	redistribute.c debug.c rtadv.c zebra_snmp.c zebra_vty.c \
+	irdp_main.c irdp_interface.c irdp_packet.c router-id.c zebra_fpm.c \
+	zebra_rnh.c \
+	$(othersrc) $(protobuf_srcs) $(dev_srcs)
+
+testzebra_SOURCES = test_main.c zebra_rib.c interface.c connected.c debug.c \
+	zebra_vty.c \
+	kernel_null.c  redistribute_null.c ioctl_null.c misc_null.c zebra_rnh_null.c
+
+noinst_HEADERS = \
+	connected.h ioctl.h rib.h rt.h zserv.h redistribute.h debug.h rtadv.h \
+	interface.h ipforward.h irdp.h router-id.h kernel_socket.h \
+	rt_netlink.h zebra_fpm.h zebra_fpm_private.h \
+	ioctl_solaris.h zebra_rnh.h
+
+zebra_LDADD = $(otherobj) ../lib/libzebra.la $(LIBCAP) $(Q_FPM_PB_CLIENT_LDOPTS)
+testzebra_LDADD = ../lib/libzebra.la $(LIBCAP)
+zebra_DEPENDENCIES = $(otherobj)
+EXTRA_DIST = if_ioctl.c if_ioctl_solaris.c if_netlink.c \
+        if_sysctl.c ipforward_proc.c \
+	ipforward_solaris.c ipforward_sysctl.c rt_netlink.c \
+	rt_socket.c rtread_netlink.c rtread_sysctl.c \
+	rtread_getmsg.c kernel_socket.c kernel_netlink.c \
+	ioctl.c ioctl_solaris.c \
+	GNOME-SMI GNOME-PRODUCT-ZEBRA-MIB
+
+quaggaconfdir = $(sysconfdir)
+examplesdir = $(exampledir)
+dist_examples_DATA = zebra.conf.sample
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/../common.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -363,9 +494,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu watchquagga/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu zebra/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu watchquagga/Makefile
+	  $(AUTOMAKE) --gnu zebra/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -374,6 +505,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
+$(srcdir)/../common.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -383,6 +515,15 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+
+clean-noinstPROGRAMS:
+	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(sbin_PROGRAMS)'; test -n "$(sbindir)" || list=; \
@@ -433,9 +574,13 @@ clean-sbinPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-watchquagga$(EXEEXT): $(watchquagga_OBJECTS) $(watchquagga_DEPENDENCIES) $(EXTRA_watchquagga_DEPENDENCIES) 
-	@rm -f watchquagga$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(watchquagga_OBJECTS) $(watchquagga_LDADD) $(LIBS)
+testzebra$(EXEEXT): $(testzebra_OBJECTS) $(testzebra_DEPENDENCIES) $(EXTRA_testzebra_DEPENDENCIES) 
+	@rm -f testzebra$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(testzebra_OBJECTS) $(testzebra_LDADD) $(LIBS)
+
+zebra$(EXEEXT): $(zebra_OBJECTS) $(zebra_DEPENDENCIES) $(EXTRA_zebra_DEPENDENCIES) 
+	@rm -f zebra$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(zebra_OBJECTS) $(zebra_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -443,7 +588,32 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/watchquagga.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/connected.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ioctl_null.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/irdp_interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/irdp_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/irdp_packet.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kernel_null.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc_null.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/redistribute.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/redistribute_null.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/router-id.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtadv.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_fpm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_fpm_dt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_fpm_netlink.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_fpm_protobuf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_rib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_rnh.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_rnh_null.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_routemap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_snmp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_vty.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zserv.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -471,6 +641,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-dist_examplesDATA: $(dist_examples_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_examples_DATA)'; test -n "$(examplesdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(examplesdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(examplesdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(examplesdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(examplesdir)" || exit $$?; \
+	done
+
+uninstall-dist_examplesDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_examples_DATA)'; test -n "$(examplesdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(examplesdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -556,9 +747,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(DATA) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(sbindir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -593,8 +784,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-sbinPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
+	clean-sbinPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -614,7 +805,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_examplesDATA
 
 install-dvi: install-dvi-am
 
@@ -660,26 +851,38 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-sbinPROGRAMS
+uninstall-am: uninstall-dist_examplesDATA uninstall-sbinPROGRAMS
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-sbinPROGRAMS cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-sbinPROGRAMS install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	clean-libtool clean-noinstPROGRAMS clean-sbinPROGRAMS \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dist_examplesDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-sbinPROGRAMS install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-sbinPROGRAMS
+	tags tags-am uninstall uninstall-am \
+	uninstall-dist_examplesDATA uninstall-sbinPROGRAMS
 
 .PRECIOUS: Makefile
 
+
+# Rules
+@HAVE_PROTOBUF_TRUE@%.pb.h: %.proto
+@HAVE_PROTOBUF_TRUE@	$(Q_PROTOC) $(PROTOBUF_INCLUDES) --cpp_out=$(top_srcdir) $(top_srcdir)/$(PROTOBUF_PACKAGE)/$^
+
+@HAVE_PROTOBUF_TRUE@%.pb-c.c %.pb-c.h: %.proto
+@HAVE_PROTOBUF_TRUE@	$(Q_PROTOC_C) $(PROTOBUF_INCLUDES) --c_out=$(top_srcdir) $(top_srcdir)/$(PROTOBUF_PACKAGE)/$^
+
+client : client_main.o ../lib/libzebra.la
+	$(CC) -g -o client client_main.o ../liblzebra.la $(LIBS) $(LIB_IPV6)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
