@@ -13,10 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
-# Solaris packages automake file
-
-# XXX This file uses GNU make extensions.
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -92,7 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = solaris
+subdir = tests/libzebra.tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_sys_weak_alias.m4 \
 	$(top_srcdir)/configure.ac
@@ -299,79 +295,14 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+EXTRA_DIST = \
+	tabletest.exp \
+	test-timer-correctness.exp \
+	testcommands.exp \
+	testcli.exp \
+	testnexthopiter.exp
 
-# the names of the various subpackages, and some convenient 
-# derived variables.
-pkg_names = daemons dev doc libs smf
-pkg_quagga_daemons = zebra bgpd ospfd ospf6d ripd ripngd
-pkg_name_rev = @PACKAGE_VERSION@-@CONFDATE@-@target_os@-@target_cpu@
-pkg_depends = $(pkg_names:%=depend.%)
-pkg_packages = $(pkg_names:%=@PACKAGE_TARNAME@-%-$(pkg_name_rev).pkg)
-pkg_pkginfos = $(pkg_names:%=pkginfo.%.full)
-pkg_prototypes = $(pkg_names:%=prototype.%)
-pkg_manifests = quagga.xml
-
-# pkgmk variable substitutions wont grok ${variable} in prototype
-# file, so we cant let autoconf generate the file sadly
-# wish automake would just provide a template for this
-edit = $(SED) \
-	-e 's,@prefix\@,$(prefix),g' \
-	-e 's,@exec_prefix,$(exec_prefix),g' \
-	-e 's,@bindir\@,$(bindir),g' \
-	-e 's,@sbindir\@,$(sbindir),g' \
-	-e 's,@libexecdir\@,$(libexecdir),g' \
-	-e 's,@datadir\@,$(datadir),g' \
-	-e 's,@sysconfdir\@,$(sysconfdir),g' \
-	-e 's,@sharedstatedir\@,$(sharedstatedir),g' \
-	-e 's,@localstatedir\@,$(localstatedir),g' \
-	-e 's,@libdir\@,$(libdir),g' \
-	-e 's,@includedir\@,$(includedir),g' \
-	-e 's,@infodir\@,$(infodir),g' \
-	-e 's,@mandir\@,$(mandir),g' \
-	-e 's,@enable_user\@,$(enable_user),g' \
-	-e 's,@enable_group\@,$(enable_group),g' \
-	-e 's,@enable_vty_group\@,$(enable_vty_group),g' \
-	-e 's,@quagga_statedir\@,$(quagga_statedir),g' \
-	-e 's,[@]PACKAGE_NAME[@],@PACKAGE_NAME@,g' \
- 	-e 's,[@]PACKAGE_TARNAME[@],@PACKAGE_TARNAME@,g' \
- 	-e 's,[@]PACKAGE_VERSION[@],@PACKAGE_VERSION@,g' \
- 	-e 's,[@]PACKAGE_BUGREPORT[@],@PACKAGE_BUGREPORT@,g' \
-  	-e 's,[@]CONFDATE[@],@CONFDATE@,g' \
- 	-e 's,[@]target_cpu[@],$(target_cpu),g' \
- 	-e 's,[@]target_host[@],$(target_host),g' \
- 	-e 's,[@]target_os[@],$(target_os),g'
-
-
-# common options for pkgmk
-pkg_make_vars = exec_prefix=@exec_prefix@ prefix=@prefix@ \
-	builddir=@builddir@ srcdir=@srcdir@ \
-	top_builddir=@top_builddir@ top_srcdir=@top_srcdir@ \
-	abs_builddir=@abs_builddir@ abs_srcdir=@abs_srcdir@ \
-	abs_top_builddir=@abs_top_builddir@ abs_top_srcdir=@abs_top_srcdir@
-
-
-# pkgmk: write the package to spool in build dir, to avoid root dependencies
-pkg_make = pkgmk -o -d @abs_builddir@ \
-	-f $< DESTDIR="$(DESTDIR)/" $(pkg_make_vars)
-
-
-# pkgtrans: write a pkg file stream, shame we cant pipe directly to it from
-# pkgmk..
-pkg_trans = pkgtrans -s @abs_builddir@ "@abs_builddir@/$@"
-
-# pkginfo.package and prototype.package are all built sources
-#BUILT_SOURCES = pkginfo.daemons pkginfo.dev pkginfo.doc pkginfo.libs \
-#	prototype.daemons prototype.dev prototype.doc prototype.libs
-BUILT_SOURCES = $(pkg_pkginfos) pkginfo.tmpl $(pkg_prototypes) \
-	$(pkg_manifests) $(pkg_depends) quagga.init
-
-CLEANFILES = $(BUILT_SOURCES) $(pkg_packages)
-EXTRA_DIST = $(pkg_manifests:%=%.in) $(pkg_prototypes:%=%.in) \
-	$(pkg_names:%=pkginfo.%.tmpl.in) $(srcdir)/pkginfo.tmpl.in \
-	$(pkg_depends:%=%.in) quagga.init.in README.txt
-
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -383,9 +314,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu solaris/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/libzebra.tests/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu solaris/Makefile
+	  $(AUTOMAKE) --gnu tests/libzebra.tests/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -447,12 +378,10 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
+check: check-am
 all-am: Makefile
 installdirs:
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -474,7 +403,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -483,7 +411,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libtool mostlyclean-am
@@ -550,7 +477,7 @@ ps-am:
 
 uninstall-am:
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	cscopelist-am ctags-am distclean distclean-generic \
@@ -566,59 +493,6 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-
-.PHONY: packages
-
-# pkgmk can only cope with a single pkginfo, cant 'stack' various 
-# pkginfo template files and a package specific pkginfo file in the prototype
-# Create the package specific template here, and create the full pkginfo
-# by cating this and the common pkginfo.tmpl together.
-pkginfo.tmpl: $(srcdir)/pkginfo.tmpl.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-
-pkginfo.%.tmpl: $(srcdir)/pkginfo.%.tmpl.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-
-pkginfo.%.full: pkginfo.%.tmpl pkginfo.tmpl Makefile
-	cat pkginfo.tmpl pkginfo.$*.tmpl > $@
-
-# use 'edit' above to transform prototype.in to pkgmk acceptable prototype
-prototype.%: $(srcdir)/prototype.%.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-
-# use edit to construct the SMF manifest files
-%.xml: $(srcdir)/%.xml.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-# use edit to construct the depend files
-depend.%: $(srcdir)/depend.%.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-
-# method file (bit like init script)
-quagga.init: $(srcdir)/quagga.init.in Makefile
-	rm -f $@
-	$(edit) $< > $@
-
-# construct the pkg
-@PACKAGE_TARNAME@-%-$(pkg_name_rev).pkg: prototype.% \
-		depend.% quagga.init pkginfo.%.full
-	($(pkg_make) && \
-	$(pkg_trans) "QUAGGA$*")
-
-%.pkg.gz : %.pkg
-	(gzip -c $< > $@)
-
-pkg-root-install:
-	(cd $(top_builddir) && \
-	 $(MAKE) DESTDIR=$(abs_builddir)/quagga-root install)
-
-packages: $(pkg_packages)
-
-#nodist_pkgdata_DATA = $(pkg_packages)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
