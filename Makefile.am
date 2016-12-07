@@ -1,29 +1,21 @@
-include ../common.am
+## Process this file with automake to produce Makefile.in.
 
-AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib $(Q_PROTOBUF_C_CLIENT_INCLUDES)
+AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
+DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
 
-PROTOBUF_INCLUDES=-I$(top_srcdir)
-PROTOBUF_PACKAGE = fpm
+AM_CFLAGS = $(PICFLAGS)
+AM_LDFLAGS = $(PILDFLAGS)
 
-lib_LTLIBRARIES = libfpm_pb.la
-libfpm_pb_la_LDFLAGS = -version-info 0:0:0
+noinst_LIBRARIES = libtopology.a
 
-if HAVE_PROTOBUF
-protobuf_srcs =
+libtopology_a_SOURCES = \
+	spgrid.c random.c
 
-protobuf_srcs_nodist =				\
-	fpm.pb-c.c
-endif
+libtopology_a_DEPENDENCIES = @LIB_REGEX@
 
-libfpm_pb_la_SOURCES =				\
-	fpm.h					\
-	fpm_pb.h				\
-	fpm_pb.c				\
-	$(protobuf_srcs)
+libtopology_a_LIBADD = @LIB_REGEX@ ../../lib/libzebra.la
 
-nodist_libfpm_pb_la_SOURCES = $(protobuf_srcs_nodist)
+noinst_HEADERS = \
+	spgrid.h
 
-CLEANFILES = $(Q_CLEANFILES)
-
-BUILT_SOURCES = $(Q_PROTOBUF_SRCS)
-EXTRA_DIST = fpm.proto
+## File dependency.
