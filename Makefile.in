@@ -92,8 +92,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-sbin_PROGRAMS = ripd$(EXEEXT)
-subdir = ripd
+sbin_PROGRAMS = ripngd$(EXEEXT)
+subdir = ripngd
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_sys_weak_alias.m4 \
 	$(top_srcdir)/configure.ac
@@ -111,20 +111,24 @@ AM_V_AR = $(am__v_AR_@AM_V@)
 am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
 am__v_AR_0 = @echo "  AR      " $@;
 am__v_AR_1 = 
-librip_a_AR = $(AR) $(ARFLAGS)
-librip_a_LIBADD =
-am_librip_a_OBJECTS = ripd.$(OBJEXT) rip_zebra.$(OBJEXT) \
-	rip_interface.$(OBJEXT) rip_debug.$(OBJEXT) rip_snmp.$(OBJEXT) \
-	rip_routemap.$(OBJEXT) rip_peer.$(OBJEXT) rip_offset.$(OBJEXT)
-librip_a_OBJECTS = $(am_librip_a_OBJECTS)
+libripng_a_AR = $(AR) $(ARFLAGS)
+libripng_a_LIBADD =
+am_libripng_a_OBJECTS = ripng_interface.$(OBJEXT) ripngd.$(OBJEXT) \
+	ripng_zebra.$(OBJEXT) ripng_route.$(OBJEXT) \
+	ripng_debug.$(OBJEXT) ripng_routemap.$(OBJEXT) \
+	ripng_offset.$(OBJEXT) ripng_peer.$(OBJEXT) \
+	ripng_nexthop.$(OBJEXT)
+libripng_a_OBJECTS = $(am_libripng_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"
 PROGRAMS = $(sbin_PROGRAMS)
-am__objects_1 = ripd.$(OBJEXT) rip_zebra.$(OBJEXT) \
-	rip_interface.$(OBJEXT) rip_debug.$(OBJEXT) rip_snmp.$(OBJEXT) \
-	rip_routemap.$(OBJEXT) rip_peer.$(OBJEXT) rip_offset.$(OBJEXT)
-am_ripd_OBJECTS = rip_main.$(OBJEXT) $(am__objects_1)
-ripd_OBJECTS = $(am_ripd_OBJECTS)
-ripd_DEPENDENCIES = ../lib/libzebra.la
+am__objects_1 = ripng_interface.$(OBJEXT) ripngd.$(OBJEXT) \
+	ripng_zebra.$(OBJEXT) ripng_route.$(OBJEXT) \
+	ripng_debug.$(OBJEXT) ripng_routemap.$(OBJEXT) \
+	ripng_offset.$(OBJEXT) ripng_peer.$(OBJEXT) \
+	ripng_nexthop.$(OBJEXT)
+am_ripngd_OBJECTS = ripng_main.$(OBJEXT) $(am__objects_1)
+ripngd_OBJECTS = $(am_ripngd_OBJECTS)
+ripngd_DEPENDENCIES = ../lib/libzebra.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -163,8 +167,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(librip_a_SOURCES) $(ripd_SOURCES)
-DIST_SOURCES = $(librip_a_SOURCES) $(ripd_SOURCES)
+SOURCES = $(libripng_a_SOURCES) $(ripngd_SOURCES)
+DIST_SOURCES = $(libripng_a_SOURCES) $(ripngd_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -397,21 +401,20 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
 INSTALL_SDATA = @INSTALL@ -m 600
 AM_CFLAGS = $(WERROR)
-noinst_LIBRARIES = librip.a
-librip_a_SOURCES = \
-	ripd.c rip_zebra.c rip_interface.c rip_debug.c rip_snmp.c \
-	rip_routemap.c rip_peer.c rip_offset.c
+noinst_LIBRARIES = libripng.a
+libripng_a_SOURCES = \
+	ripng_interface.c ripngd.c ripng_zebra.c ripng_route.c ripng_debug.c \
+	ripng_routemap.c ripng_offset.c ripng_peer.c ripng_nexthop.c
 
 noinst_HEADERS = \
-	ripd.h rip_debug.h rip_interface.h
+	ripng_debug.h ripng_route.h ripngd.h ripng_nexthop.h
 
-ripd_SOURCES = \
-	rip_main.c $(librip_a_SOURCES)
+ripngd_SOURCES = \
+	ripng_main.c $(libripng_a_SOURCES)
 
-ripd_LDADD = ../lib/libzebra.la @LIBCAP@
+ripngd_LDADD = ../lib/libzebra.la @LIBCAP@
 examplesdir = $(exampledir)
-dist_examples_DATA = ripd.conf.sample
-EXTRA_DIST = RIPv2-MIB.txt
+dist_examples_DATA = ripngd.conf.sample
 all: all-am
 
 .SUFFIXES:
@@ -425,9 +428,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu ripd/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu ripngd/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu ripd/Makefile
+	  $(AUTOMAKE) --gnu ripngd/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -449,10 +452,10 @@ $(am__aclocal_m4_deps):
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
-librip.a: $(librip_a_OBJECTS) $(librip_a_DEPENDENCIES) $(EXTRA_librip_a_DEPENDENCIES) 
-	$(AM_V_at)-rm -f librip.a
-	$(AM_V_AR)$(librip_a_AR) librip.a $(librip_a_OBJECTS) $(librip_a_LIBADD)
-	$(AM_V_at)$(RANLIB) librip.a
+libripng.a: $(libripng_a_OBJECTS) $(libripng_a_DEPENDENCIES) $(EXTRA_libripng_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f libripng.a
+	$(AM_V_AR)$(libripng_a_AR) libripng.a $(libripng_a_OBJECTS) $(libripng_a_LIBADD)
+	$(AM_V_at)$(RANLIB) libripng.a
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(sbin_PROGRAMS)'; test -n "$(sbindir)" || list=; \
@@ -503,9 +506,9 @@ clean-sbinPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-ripd$(EXEEXT): $(ripd_OBJECTS) $(ripd_DEPENDENCIES) $(EXTRA_ripd_DEPENDENCIES) 
-	@rm -f ripd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(ripd_OBJECTS) $(ripd_LDADD) $(LIBS)
+ripngd$(EXEEXT): $(ripngd_OBJECTS) $(ripngd_DEPENDENCIES) $(EXTRA_ripngd_DEPENDENCIES) 
+	@rm -f ripngd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(ripngd_OBJECTS) $(ripngd_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -513,15 +516,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_debug.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_interface.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_offset.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_peer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_routemap.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_snmp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rip_zebra.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_nexthop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_offset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_peer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_route.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_routemap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripng_zebra.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ripngd.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

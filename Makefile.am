@@ -6,23 +6,21 @@ INSTALL_SDATA=@INSTALL@ -m 600
 
 AM_CFLAGS = $(WERROR)
 
-noinst_LIBRARIES = librip.a
-sbin_PROGRAMS = ripd
+noinst_LIBRARIES = libripng.a
+sbin_PROGRAMS = ripngd
 
-librip_a_SOURCES = \
-	ripd.c rip_zebra.c rip_interface.c rip_debug.c rip_snmp.c \
-	rip_routemap.c rip_peer.c rip_offset.c
+libripng_a_SOURCES = \
+	ripng_interface.c ripngd.c ripng_zebra.c ripng_route.c ripng_debug.c \
+	ripng_routemap.c ripng_offset.c ripng_peer.c ripng_nexthop.c
 
 noinst_HEADERS = \
-	ripd.h rip_debug.h rip_interface.h
+	ripng_debug.h ripng_route.h ripngd.h ripng_nexthop.h
 
-ripd_SOURCES = \
-	rip_main.c $(librip_a_SOURCES)
+ripngd_SOURCES = \
+	ripng_main.c $(libripng_a_SOURCES)
 
-ripd_LDADD = ../lib/libzebra.la @LIBCAP@
+ripngd_LDADD = ../lib/libzebra.la @LIBCAP@
 
 examplesdir = $(exampledir)
-dist_examples_DATA = ripd.conf.sample
-
-EXTRA_DIST = RIPv2-MIB.txt
+dist_examples_DATA = ripngd.conf.sample
 
