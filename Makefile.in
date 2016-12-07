@@ -14,6 +14,31 @@
 
 @SET_MAKE@
 
+# qpimd - pimd for quagga
+# Copyright (C) 2008 Everton da Silva Marques
+#
+# qpimd is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2,
+# or (at your option) any later version.
+# 
+# qpimd is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public
+# License along with qpimd; see the file COPYING.  If not, write
+# to the Free Software Foundation, Inc., 59 Temple Place - Suite
+# 330, Boston, MA 02111-1307, USA.
+
+# PIM_DEBUG_BYDEFAULT: Automatically enables all pimd "debug ..." commands
+# PIM_ZCLIENT_DEBUG: Support for internal ZEBRA client debugging
+# PIM_CHECK_RECV_IFINDEX_SANITY: Compare socket ifindex with recv ifindex
+# PIM_REPORT_RECV_IFINDEX_MISMATCH: Report sock/recv ifindex mismatch
+# PIM_ENFORCE_LOOPFREE_MFC: Refuse adding looping MFC entries
+# PIM_UNEXPECTED_KERNEL_UPCALL: Report unexpected kernel upcall
+
 
 
 
@@ -92,69 +117,65 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-sbin_PROGRAMS = ospfd$(EXEEXT)
-subdir = ospfd
+sbin_PROGRAMS = pimd$(EXEEXT)
+bin_PROGRAMS = test_igmpv3_join$(EXEEXT)
+subdir = pimd
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_sys_weak_alias.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(dist_examples_DATA) \
-	$(noinst_HEADERS) $(ospfdheader_HEADERS) $(am__DIST_COMMON)
+	$(noinst_HEADERS) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  test -z "$$files" \
-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-         $(am__cd) "$$dir" && rm -f $$files; }; \
-  }
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(sbindir)" \
-	"$(DESTDIR)$(examplesdir)" "$(DESTDIR)$(ospfdheaderdir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
-libospf_la_DEPENDENCIES = ../lib/libzebra.la
-am_libospf_la_OBJECTS = ospfd.lo ospf_zebra.lo ospf_interface.lo \
-	ospf_ism.lo ospf_neighbor.lo ospf_nsm.lo ospf_dump.lo \
-	ospf_network.lo ospf_packet.lo ospf_lsa.lo ospf_spf.lo \
-	ospf_route.lo ospf_ase.lo ospf_abr.lo ospf_ia.lo ospf_flood.lo \
-	ospf_lsdb.lo ospf_asbr.lo ospf_routemap.lo ospf_snmp.lo \
-	ospf_opaque.lo ospf_te.lo ospf_ri.lo ospf_vty.lo ospf_api.lo \
-	ospf_apiserver.lo
-libospf_la_OBJECTS = $(am_libospf_la_OBJECTS)
+LIBRARIES = $(noinst_LIBRARIES)
+ARFLAGS = cru
+AM_V_AR = $(am__v_AR_@AM_V@)
+am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
+am__v_AR_0 = @echo "  AR      " $@;
+am__v_AR_1 = 
+libpim_a_AR = $(AR) $(ARFLAGS)
+libpim_a_LIBADD =
+am_libpim_a_OBJECTS = pimd.$(OBJEXT) pim_version.$(OBJEXT) \
+	pim_cmd.$(OBJEXT) pim_signals.$(OBJEXT) pim_iface.$(OBJEXT) \
+	pim_vty.$(OBJEXT) pim_igmp.$(OBJEXT) pim_sock.$(OBJEXT) \
+	pim_zebra.$(OBJEXT) pim_igmpv3.$(OBJEXT) pim_str.$(OBJEXT) \
+	pim_mroute.$(OBJEXT) pim_util.$(OBJEXT) pim_time.$(OBJEXT) \
+	pim_oil.$(OBJEXT) pim_zlookup.$(OBJEXT) pim_pim.$(OBJEXT) \
+	pim_tlv.$(OBJEXT) pim_neighbor.$(OBJEXT) pim_hello.$(OBJEXT) \
+	pim_ifchannel.$(OBJEXT) pim_join.$(OBJEXT) \
+	pim_assert.$(OBJEXT) pim_msg.$(OBJEXT) pim_upstream.$(OBJEXT) \
+	pim_rpf.$(OBJEXT) pim_macro.$(OBJEXT) pim_igmp_join.$(OBJEXT) \
+	pim_ssmpingd.$(OBJEXT) pim_int.$(OBJEXT) pim_static.$(OBJEXT)
+libpim_a_OBJECTS = $(am_libpim_a_OBJECTS)
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sbindir)" \
+	"$(DESTDIR)$(examplesdir)"
+PROGRAMS = $(bin_PROGRAMS) $(sbin_PROGRAMS)
+am__objects_1 = pimd.$(OBJEXT) pim_version.$(OBJEXT) pim_cmd.$(OBJEXT) \
+	pim_signals.$(OBJEXT) pim_iface.$(OBJEXT) pim_vty.$(OBJEXT) \
+	pim_igmp.$(OBJEXT) pim_sock.$(OBJEXT) pim_zebra.$(OBJEXT) \
+	pim_igmpv3.$(OBJEXT) pim_str.$(OBJEXT) pim_mroute.$(OBJEXT) \
+	pim_util.$(OBJEXT) pim_time.$(OBJEXT) pim_oil.$(OBJEXT) \
+	pim_zlookup.$(OBJEXT) pim_pim.$(OBJEXT) pim_tlv.$(OBJEXT) \
+	pim_neighbor.$(OBJEXT) pim_hello.$(OBJEXT) \
+	pim_ifchannel.$(OBJEXT) pim_join.$(OBJEXT) \
+	pim_assert.$(OBJEXT) pim_msg.$(OBJEXT) pim_upstream.$(OBJEXT) \
+	pim_rpf.$(OBJEXT) pim_macro.$(OBJEXT) pim_igmp_join.$(OBJEXT) \
+	pim_ssmpingd.$(OBJEXT) pim_int.$(OBJEXT) pim_static.$(OBJEXT)
+am_pimd_OBJECTS = pim_main.$(OBJEXT) $(am__objects_1)
+pimd_OBJECTS = $(am_pimd_OBJECTS)
+pimd_DEPENDENCIES = ../lib/libzebra.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libospf_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libospf_la_LDFLAGS) $(LDFLAGS) -o $@
-PROGRAMS = $(sbin_PROGRAMS)
-am_ospfd_OBJECTS = ospf_main.$(OBJEXT)
-ospfd_OBJECTS = $(am_ospfd_OBJECTS)
-ospfd_DEPENDENCIES = libospf.la ../lib/libzebra.la
+am_test_igmpv3_join_OBJECTS = test_igmpv3_join.$(OBJEXT) \
+	pim_igmp_join.$(OBJEXT)
+test_igmpv3_join_OBJECTS = $(am_test_igmpv3_join_OBJECTS)
+test_igmpv3_join_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -189,15 +210,44 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libospf_la_SOURCES) $(ospfd_SOURCES)
-DIST_SOURCES = $(libospf_la_SOURCES) $(ospfd_SOURCES)
+SOURCES = $(libpim_a_SOURCES) $(pimd_SOURCES) \
+	$(test_igmpv3_join_SOURCES)
+DIST_SOURCES = $(libpim_a_SOURCES) $(pimd_SOURCES) \
+	$(test_igmpv3_join_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
 DATA = $(dist_examples_DATA)
-HEADERS = $(noinst_HEADERS) $(ospfdheader_HEADERS)
+HEADERS = $(noinst_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -217,7 +267,8 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp
+am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp AUTHORS \
+	COPYING README TODO
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -237,7 +288,7 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CURSES = @CURSES@
 CYGPATH_W = @CYGPATH_W@
-DEFS = @DEFS@ $(LOCAL_OPTS) -DSYSCONFDIR=\"$(sysconfdir)/\"
+DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\" $(PIM_DEFS)
 DEJAGNU = @DEJAGNU@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
@@ -393,34 +444,42 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+#PIM_DEFS += -DPIM_DEBUG_BYDEFAULT
+#PIM_DEFS += -DPIM_REPORT_RECV_IFINDEX_MISMATCH
+PIM_DEFS = -DPIM_CHECK_RECV_IFINDEX_SANITY -DPIM_ZCLIENT_DEBUG \
+	-DPIM_ENFORCE_LOOPFREE_MFC
+#PIM_DEFS += -DPIM_UNEXPECTED_KERNEL_UPCALL
 AM_CPPFLAGS = -I.. -I$(top_srcdir) -I$(top_srcdir)/lib -I$(top_builddir)/lib
-AM_CFLAGS = $(WERROR)
 INSTALL_SDATA = @INSTALL@ -m 600
-lib_LTLIBRARIES = libospf.la
-libospf_la_LDFLAGS = -version-info 0:0:0
-libospf_la_LIBADD = ../lib/libzebra.la
-libospf_la_SOURCES = \
-	ospfd.c ospf_zebra.c ospf_interface.c ospf_ism.c ospf_neighbor.c \
-	ospf_nsm.c ospf_dump.c ospf_network.c ospf_packet.c ospf_lsa.c \
-	ospf_spf.c ospf_route.c ospf_ase.c ospf_abr.c ospf_ia.c ospf_flood.c \
-	ospf_lsdb.c ospf_asbr.c ospf_routemap.c ospf_snmp.c \
-	ospf_opaque.c ospf_te.c ospf_ri.c ospf_vty.c ospf_api.c ospf_apiserver.c
-
-ospfdheaderdir = $(pkgincludedir)/ospfd
-ospfdheader_HEADERS = \
-	ospf_api.h ospf_asbr.h ospf_dump.h ospf_lsa.h ospf_lsdb.h \
-	ospf_nsm.h ospf_ism.h ospf_opaque.h ospfd.h
+AM_CFLAGS = $(WERROR)
+noinst_LIBRARIES = libpim.a
+libpim_a_SOURCES = \
+	pimd.c pim_version.c pim_cmd.c pim_signals.c pim_iface.c \
+	pim_vty.c pim_igmp.c pim_sock.c pim_zebra.c \
+	pim_igmpv3.c pim_str.c pim_mroute.c pim_util.c pim_time.c \
+	pim_oil.c pim_zlookup.c pim_pim.c pim_tlv.c pim_neighbor.c \
+	pim_hello.c pim_ifchannel.c pim_join.c pim_assert.c \
+	pim_msg.c pim_upstream.c pim_rpf.c pim_macro.c \
+	pim_igmp_join.c pim_ssmpingd.c pim_int.c pim_static.c
 
 noinst_HEADERS = \
-	ospf_interface.h ospf_neighbor.h ospf_network.h ospf_packet.h \
-	ospf_zebra.h ospf_spf.h ospf_route.h ospf_ase.h ospf_abr.h ospf_ia.h \
-	ospf_flood.h ospf_snmp.h ospf_te.h ospf_ri.h ospf_vty.h ospf_apiserver.h
+	pimd.h pim_version.h pim_cmd.h pim_signals.h pim_iface.h \
+	pim_vty.h pim_igmp.h pim_sock.h pim_zebra.h \
+	pim_igmpv3.h pim_str.h pim_mroute.h pim_util.h pim_time.h \
+	pim_oil.h pim_zlookup.h pim_pim.h pim_tlv.h pim_neighbor.h \
+	pim_hello.h pim_ifchannel.h pim_join.h pim_assert.h \
+	pim_msg.h pim_upstream.h pim_rpf.h pim_macro.h \
+	pim_igmp_join.h pim_ssmpingd.h pim_int.h pim_static.h
 
-ospfd_SOURCES = ospf_main.c
-ospfd_LDADD = libospf.la ../lib/libzebra.la @LIBCAP@ @LIBM@
-EXTRA_DIST = OSPF-MIB.txt OSPF-TRAP-MIB.txt ChangeLog.opaque.txt
+pimd_SOURCES = \
+	pim_main.c $(libpim_a_SOURCES)
+
+test_igmpv3_join_SOURCES = \
+	test_igmpv3_join.c pim_igmp_join.c
+
+pimd_LDADD = ../lib/libzebra.la @LIBCAP@
 examplesdir = $(exampledir)
-dist_examples_DATA = ospfd.conf.sample
+dist_examples_DATA = pimd.conf.sample
 all: all-am
 
 .SUFFIXES:
@@ -434,9 +493,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu ospfd/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu pimd/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu ospfd/Makefile
+	  $(AUTOMAKE) --gnu pimd/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -455,43 +514,62 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+
+libpim.a: $(libpim_a_OBJECTS) $(libpim_a_DEPENDENCIES) $(EXTRA_libpim_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f libpim.a
+	$(AM_V_AR)$(libpim_a_AR) libpim.a $(libpim_a_OBJECTS) $(libpim_a_LIBADD)
+	$(AM_V_at)$(RANLIB) libpim.a
+install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(libdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(libdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
-	}
+	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
+	fi; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p \
+	 || test -f $$p1 \
+	  ; then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' \
+	    -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	    } \
+	; done
 
-uninstall-libLTLIBRARIES:
+uninstall-binPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
-	done
+	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' \
+	`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(bindir)" && rm -f $$files
 
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	test -z "$$locs" || { \
-	  echo rm -f $${locs}; \
-	  rm -f $${locs}; \
-	}
-
-libospf.la: $(libospf_la_OBJECTS) $(libospf_la_DEPENDENCIES) $(EXTRA_libospf_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libospf_la_LINK) -rpath $(libdir) $(libospf_la_OBJECTS) $(libospf_la_LIBADD) $(LIBS)
+clean-binPROGRAMS:
+	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(sbin_PROGRAMS)'; test -n "$(sbindir)" || list=; \
@@ -542,9 +620,13 @@ clean-sbinPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-ospfd$(EXEEXT): $(ospfd_OBJECTS) $(ospfd_DEPENDENCIES) $(EXTRA_ospfd_DEPENDENCIES) 
-	@rm -f ospfd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(ospfd_OBJECTS) $(ospfd_LDADD) $(LIBS)
+pimd$(EXEEXT): $(pimd_OBJECTS) $(pimd_DEPENDENCIES) $(EXTRA_pimd_DEPENDENCIES) 
+	@rm -f pimd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(pimd_OBJECTS) $(pimd_LDADD) $(LIBS)
+
+test_igmpv3_join$(EXEEXT): $(test_igmpv3_join_OBJECTS) $(test_igmpv3_join_DEPENDENCIES) $(EXTRA_test_igmpv3_join_DEPENDENCIES) 
+	@rm -f test_igmpv3_join$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_igmpv3_join_OBJECTS) $(test_igmpv3_join_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -552,33 +634,39 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_abr.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_api.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_apiserver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_asbr.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_ase.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_dump.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_flood.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_ia.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_interface.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_ism.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_lsa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_lsdb.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_neighbor.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_network.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_nsm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_opaque.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_packet.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_ri.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_route.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_routemap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_snmp.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_spf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_te.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_vty.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospf_zebra.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ospfd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_assert.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_cmd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_hello.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_iface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_ifchannel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_igmp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_igmp_join.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_igmpv3.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_int.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_join.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_macro.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_mroute.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_msg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_neighbor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_oil.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_pim.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_rpf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_signals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_sock.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_ssmpingd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_static.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_str.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_time.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_tlv.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_upstream.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_util.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_version.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_vty.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_zebra.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pim_zlookup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pimd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_igmpv3_join.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -627,27 +715,6 @@ uninstall-dist_examplesDATA:
 	@list='$(dist_examples_DATA)'; test -n "$(examplesdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(examplesdir)'; $(am__uninstall_files_from_dir)
-install-ospfdheaderHEADERS: $(ospfdheader_HEADERS)
-	@$(NORMAL_INSTALL)
-	@list='$(ospfdheader_HEADERS)'; test -n "$(ospfdheaderdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(ospfdheaderdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(ospfdheaderdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(ospfdheaderdir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(ospfdheaderdir)" || exit $$?; \
-	done
-
-uninstall-ospfdheaderHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(ospfdheader_HEADERS)'; test -n "$(ospfdheaderdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(ospfdheaderdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -733,9 +800,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)" "$(DESTDIR)$(ospfdheaderdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -770,8 +837,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-sbinPROGRAMS mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool \
+	clean-noinstLIBRARIES clean-sbinPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -791,13 +858,13 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_examplesDATA install-ospfdheaderHEADERS
+install-data-am: install-dist_examplesDATA
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-libLTLIBRARIES install-sbinPROGRAMS
+install-exec-am: install-binPROGRAMS install-sbinPROGRAMS
 
 install-html: install-html-am
 
@@ -837,28 +904,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-dist_examplesDATA uninstall-libLTLIBRARIES \
-	uninstall-ospfdheaderHEADERS uninstall-sbinPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_examplesDATA \
+	uninstall-sbinPROGRAMS
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool clean-sbinPROGRAMS \
-	cscopelist-am ctags ctags-am distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
+.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean \
+	clean-binPROGRAMS clean-generic clean-libtool \
+	clean-noinstLIBRARIES clean-sbinPROGRAMS cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dist_examplesDATA \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-html install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-ospfdheaderHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-sbinPROGRAMS install-strip installcheck \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-sbinPROGRAMS install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
-	uninstall-dist_examplesDATA uninstall-libLTLIBRARIES \
-	uninstall-ospfdheaderHEADERS uninstall-sbinPROGRAMS
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_examplesDATA uninstall-sbinPROGRAMS
 
 .PRECIOUS: Makefile
 
